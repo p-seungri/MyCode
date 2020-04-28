@@ -1,0 +1,77 @@
+#define _CRT_SECURE_NO_WARNINGS
+#define INVALID -1
+#include <stdio.h>
+#include <string.h>
+
+void omitString(char* szStr, int n);
+
+int main()
+{
+	char szData[500] = { 0 };
+	int n = 0;
+	int i = 0;
+	
+	printf("문자열을 입력하시오: ");
+
+	scanf("%s", szData); //문자열 입력받음
+
+	while(1) //루프를 돈다.
+	{
+		printf("\n");
+
+		printf("몇 번째 문자을 없애시겠습니까? ");
+
+		scanf("%d", &n); //몇 번째 문자을 없앨지 받음.
+
+		if (n == -1) //-1이 입력되면 탈출하게 설계
+		{
+			break;
+		}
+
+		printf("\n");
+
+
+		printf("수정되기 이전의 문자열: %s \n\n", szData); //수정되기 이전의 문자열 출력
+
+		omitString(szData, n); // 함수를 출력해 문자 제거
+
+		printf("수정된 이후의 문자열: %s \n\n", szData); //수정된 후의 문자열
+
+		printf("탈출하려면 -1을 입력\n\n");
+		
+
+		
+	}
+
+
+	return 0;
+}
+
+void omitString(char* szStr, int n)
+{
+	int i = 0;
+	char tmp = '\0';
+	int nLength = strlen(szStr);
+
+	if (n - 1 > nLength-1 || n - 1 < 0) //없애려는 문자의 위치가 문자열의 인덱스 번호보다 크거나 0보다 작은 경우
+	{
+		printf("잘못된 값이 입력되었습니다. \n\n"); //그런 경우에는 문자 출력 후 함수 종료
+		return;
+	}
+
+	szStr[n-1] = INVALID; //없애려는 문자 위치에 -1로 정의된 기호상수 INVAILD를 넣음
+
+	for (i = 0; i < nLength; i++)
+	{
+		if (szStr[i] == INVALID) //만약에 i번째 문자열이 -1이 라면
+		{
+			//그 i+1 위치에 있는 문자와 위치를 바꿈.
+			tmp = szStr[i]; 
+			szStr[i] = szStr[i + 1];
+			szStr[i + 1] = tmp;
+		}
+	}
+
+	//szStr[nLength]에는 결국에 -1이 저장되어 있으니 0으로 변경
+	szStr[nLength] = 0;
+}
