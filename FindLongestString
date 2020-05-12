@@ -1,0 +1,60 @@
+#pragma warning(disable : 4996)
+#include <stdio.h>
+#include <string.h>
+
+
+int main(void)
+{
+    char str[100] = "No pain and No gain";
+    char extract[100] = { 0 ,}; //가장 긴 문자열을 저장할 변수
+    char tmp[100] = { 0, }; //임시 문자열을 저장할 변수
+    int lengthEntire = 0; //문자열의 전체 길이를 나타낼 변수
+    int lengthAfter = 0; //이후 문자열의 길이
+    int lengthLong = 0; //가장 긴 문자열의 길이
+    int i = 0;
+    int j = 0;
+    
+    lengthEntire = strlen(str); //전체 길이 저장
+
+    
+
+    for (i = 0; i < lengthEntire ; i++) 
+    {
+
+        tmp[j] = str[i]; //tmp[j]부터 str[i]를 저장
+
+        lengthAfter++; //길이 1증가
+        j++; //j도 1증가
+             
+
+        if (str[i] == ' ' || str[i+1] == '\0') //str[i]가 가리키는 값이 공백이나 문자열의 끝에 도달하면
+        {
+            if (str[i + 1] == '\0') //문자열의 끝에 도달시
+            {
+                lengthAfter++; //길이 1 추가, 마지막에는 공백이 없어서 길이가 다른 것들보다 1작음
+            }
+
+
+
+            if (lengthLong <= lengthAfter-1) //이후 길이가 더 길면, 공백문자 때문에 길이가 1더 길게 나오기 때문에 1 줄임.
+            {
+                strcpy(extract, tmp); //문자열 저장
+                lengthLong = lengthAfter-1; //가장 긴 길이 변경
+
+            }
+
+            memset(tmp, 0, sizeof(tmp)); //tmp 배열 데이터를 원래 대로 바꿔줌.
+
+            lengthAfter = 0; //길이도 원래 대로 바꿔줌.
+
+            j = 0; //임시 문자열 저장하는 것도 이제 처음부터 다시 저장해야하니 j를 0으로 바꿔줌.
+        }
+    }
+
+    printf("가장 긴 문자는 %s 입니다.", extract); //출력
+
+
+
+
+    return 0;
+}
