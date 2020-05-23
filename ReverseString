@@ -1,0 +1,63 @@
+#pragma warning(disable : 4996)
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main(void)
+{
+    int i = 0; //반복문에 쓸 변수
+    char str[50] = { 0, }; //문자열을 입력 받을 배열
+    char extract[50] = { 0, }; //역순으로 출력할 배열
+    char tmp[50][50] = { 0, }; //각각의 나눈 문자열들을 임시로 저장하는 배열
+    char seps[] = " "; //strtok 함수의 구분자
+    char* token = NULL; //strtok의 토큰
+    int length = 0; //문자열의 중간 중간의 길이를 재서 저장할 변수
+
+    
+    printf("문자열을 입력하시오 : ");
+    fgets(str, sizeof(char) * 50, stdin); //문자열 입력받음.
+
+
+    token = strtok(str, seps); //strtok 함수의 첫 번째 토근 넣음.
+
+    do
+    {
+        strcpy(tmp[i], token); //i가 가리키는 주소에 token을 저장함.
+
+        token = strtok(NULL, seps); //다음 토큰을 가리킴.
+
+        i++; //인덱스 증가
+    } while (token != NULL);
+
+
+    i--; //마지막에 반복문 돌고 인덱스가 한 번 더 증가하기 때문에 1 줄여줌.
+
+    if (i >= 0)
+    {
+        length = strlen(tmp[i]); //현재 i가 마지막 문자열의 인덱스를 가리키고 있을 것임. 그 위치에 있는 문자열의 길이를 저장
+
+        tmp[i][length - 1] = '\0'; //마지막에 개행문자가 저장되어 있으니 그것을 널문자로 바꿈.
+    }
+    else
+    {
+        exit(1);
+    }
+
+    
+
+    while (i >= 0)
+    {
+        strcat(extract, tmp[i]); //현재 i는 마지막 문자열을 가리키고 있음. 그 문자열부터 extract에 이어 붙임.
+        strcat(extract, " "); //이어 붙힌 후 띄어쓰기 함.
+        i--; //i를 하나 줄여 다음 문자열을 가리킴
+    }
+
+    length = strlen(extract); //저장된 extract의 길이를 저장
+
+    extract[length - 1] = '\0'; //마지막 부분에 띄어쓰기 문자가 있을테니 그것을 널문자로 변경
+
+    printf("역순으로 출력하면 %s입니다.", extract); //출력
+
+
+    return 0;
+}
