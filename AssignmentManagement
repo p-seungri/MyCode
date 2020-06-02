@@ -1,0 +1,130 @@
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <conio.h>
+using namespace std;
+
+class Report
+{
+public:
+	Report() 
+	{
+		cout << "몇 개의 과목을 입력하시겠습니까? ";
+		cin >> size;
+
+		contents = new string[size];
+		date = new string[size];
+		result = new string[size];
+	}
+
+	~Report()
+	{
+		delete[] contents;
+		delete[] date;
+		delete[] result;
+	}
+
+
+
+	int PrintUI()
+	{	
+		int n;
+		
+		cout << "메뉴" << endl;
+		cout << "1. 과제 입력하기" << endl;
+		cout << "2. 과제 보기" << endl;
+		cout << "3. 종료" << endl;
+		cin >> n;
+
+		switch (n)
+		{
+		case 1:
+			rsubject();
+			return 1;
+		case 2:
+			show();
+			return 1;
+		case 3:
+			return 0;
+		default:
+			cout << "잘못된 메뉴를 선택하셨습니다." << endl;
+			_getch();
+			return 1;
+		}
+
+
+
+	}
+
+protected:
+	void rsubject()
+	{
+		count++;
+
+		if (count > size)
+		{
+			cout << "입력 가능한 과목 수를 초과합니다!" << endl;
+			count--;
+			_getch();
+			return;
+		}
+
+
+
+		cout << count << "번째 과목명을 입력하시오 : ";
+		cin >> contents[count-1];
+
+		cout << contents[count-1] << "의 제출 기한을 입력하시오 : ";
+		cin >> date[count-1];
+
+		cout << contents[count-1] << "의 제출 상태를 입력하시오 : ";
+		cin >> result[count-1];
+
+
+	}
+
+	void show()
+	{
+		if (count == 0)
+		{
+			cout << endl;
+			cout << "입력 받은 과목이 없습니다!" << endl;
+			_getch();
+			return;
+		}
+
+		cout << "현재까지 입력 받은 과목의 정보를 출력합니다!" << endl;
+
+		for (int i = 0; i < count; i++)
+		{
+			cout << "과목 이름: " << contents[i] << endl;
+			cout << contents[i] << "의 제출 기한 : " << date[i] << endl;
+			cout << contents[i] << "의 제출 상태 : " << result[i] << endl << endl;
+		}
+		
+		_getch();
+
+	}
+
+
+
+private:
+	string *contents = nullptr;
+	string *date = nullptr;
+	string *result = nullptr;
+	static int count;
+	int size = 0;
+};
+
+int Report::count = 0;
+
+int main() 
+{
+	Report on;
+
+	while (on.PrintUI())
+	{
+		system("cls");
+	}
+	
+}
