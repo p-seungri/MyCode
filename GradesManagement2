@@ -1,0 +1,338 @@
+#pragma warning(disable : 4996)
+#include <iostream>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <algorithm>
+#include <tchar.h>
+#include <conio.h>
+#define DATA_FILE_NAME "outputData.txt" //파일명 기호상수화
+#define NUMBER_OF_SUBJECTS 3 //과목수
+#define NUMBER_OF_STUDENTS 5 //학생수
+using namespace std;
+
+#if defined(UNICODE) || defined(_UNICODE) //한글 입력했을 때 대비해서 유니코드 해줌
+#define tcout std::wcout 
+#define tcin std::wcin 
+#define tofstream std::wofstream
+#else 
+#define tcout std::cout 
+#define tcin std::cin
+#define tofstream std::ofstream
+#endif
+
+class Person
+{
+public:
+	Person() : name(nullptr), flag(0) //학생의 이름을 매개변수로 받음
+	{
+		name = new TCHAR[32]; //메모리 동적할당
+	}
+
+	explicit Person(const TCHAR* pszName) : name(nullptr), flag(0) //학생의 이름을 매개변수로 받음
+	{
+		name = new TCHAR[32]; //메모리 동적할당
+		_tcscpy(name, pszName); //받은 이름을 저장
+	}
+
+	~Person()
+	{
+		if (flag)
+		{
+			delete[] name; //메모리 해제
+		}
+	}
+
+protected:
+	void SetName()
+	{
+		cout << "학생의 이름을 입력하시오: ";
+		tcin >> name;
+	}
+
+	void SetFlag(int f)
+	{
+		flag = f;
+	}
+
+	virtual void showData() = 0; //학생들의 정보를 출력할 순수가상함수
+	virtual void showUI() = 0; //과목을 출력할 순수가상함수
+
+protected:
+	TCHAR* name; //학생의 이름
+	int flag; //동적할당 메모리 해제 판단용
+};
+
+
+class Student : public Person //Person클래스를 상속
+{
+public:
+	Student() : Person() //생성자 선택
+	{
+		//각종 멤버 변수들 초기화
+		m_dAverage = 0;
+		m_dSum = 0;
+		m_dGrades = new double[NUMBER_OF_SUBJECTS];
+	}
+
+	Student(const Student& rhs) : Person(rhs.name)
+	{
+		m_dSum = rhs.m_dSum;
+		m_dAverage = rhs.m_dAverage;
+		m_dGrades = new double[NUMBER_OF_SUBJECTS];
+		
+		for (int i = 0; i < NUMBER_OF_SUBJECTS; i++)
+		{
+			m_dGrades[i] = rhs.m_dGrades[i];
+		}
+
+	
+	}
+
+	~Student()
+	{
+		if (flag)
+		{
+			delete[] m_dGrades; //동적 할당된 메모리 해제
+		}
+	}
+
+	void Results() //총합 계산
+	{
+		for (int i = 0; i < NUMBER_OF_SUBJECTS; i++)
+		{
+			m_dSum += m_dGrades[i];
+		}
+	}
+
+	void Average() //평균 계산
+	{
+		m_dAverage = m_dSum / NUMBER_OF_SUBJECTS;
+
+	}
+
+	virtual void showData() //학생의 데이터 보여줌
+	{
+		tofstream fout;
+
+		fout.open(DATA_FILE_NAME, ios::app); //이어쓰기로 파일 열기
+
+		fout << " ";
+
+		fout.write(name, _tcslen(name)); //학생의 이름 출력
+
+		fout << " ";
+
+		//소수점 자리 설정
+		fout.setf(ios::showpoint);
+		fout.precision(4);
+
+		for (int i = 0; i < NUMBER_OF_SUBJECTS; i++) //학생의 성적 출력
+		{
+			fout << "|   " << m_dGrades[i] << "   ";
+		}
+
+		fout << "|   " << m_dSum << "   "; //합계출력
+		fout << "|   " << m_dAverage << "   " << endl; //평균 출력
+
+
+		studentCount--; //학생의 정보가 출력되었다는 의미에서 하나 줄임
+
+		if (studentCount == 0) //마지막 학생의 정보까지 다 출력을 하면 마무리 라인 그어줌.
+		{
+			fout << "-----------------------------------------------------------------" << endl;
+		}
+
+
+		fout.close(); //파일 닫기
+
+
+	}
+
+
+	virtual void showUI() //과목 보여줌
+	{
+
+		ofstream fout;
+
+		fout.open(DATA_FILE_NAME, ios::out); //새로 쓰기로 파일열기
+
+		fout << "=========================================" << endl;
+
+
+		fout << "   성명  |   국어    |   영어    |    수학    |   총점    |  평균 " << endl;
+
+
+		fout << "-----------------------------------------------------------------" << endl;
+
+
+		fout.close(); //파일 닫기
+
+	}
+
+	friend int PrintMenu(Student rhs[]);
+	friend bool CompareStudents(Student& rhs1, Student& rhs2);
+	friend void SearchStudents(Student rhs[], int size);
+	friend void SortStudents(Student rhs[], int size);
+	friend void SetStudentGrades(Student rhs[], int sizeStudent, int sizeSubject);
+
+
+
+private:
+	double* m_dGrades; //성적을 저장할 포인터
+	double m_dSum; //총합을 저장할 변수
+	double m_dAverage; //평균을 저장할 변수
+	static int studentCount; //생성된 학생의 수를 세기 위한 정적 멤버
+};
+
+int Student::studentCount = 0;
+
+int PrintMenu(Student rhs[])
+{
+	int nMenu = 0;
+	
+	cout << "메뉴를 선택하세요!" << endl;
+	cout << "1.학생성적 등록" << endl;
+	cout << "2.정렬" << endl;
+	cout << "3.검색" << endl;
+	cout << "4.종료" << endl;
+	cin >> nMenu;
+
+	switch(nMenu)
+	{
+	case 1:
+		SetStudentGrades(rhs, NUMBER_OF_STUDENTS, NUMBER_OF_SUBJECTS);
+		return 1;
+	case 2:
+		SortStudents(rhs, NUMBER_OF_STUDENTS);
+		return 1;
+	case 3:
+		SearchStudents(rhs, NUMBER_OF_STUDENTS);
+		return 1;
+	case 4:
+		cout << "프로그램을 종료합니다!" << endl;
+		_getch();
+
+		for (int i = 0; i < NUMBER_OF_STUDENTS; i++)
+		{
+			rhs[i].SetFlag(1);
+		}
+
+		return 0;
+	default:
+		cout << "잘못된 메뉴를 입력하셨습니다." << endl;
+		cout << "프로그램을 종료합니다!" << endl;
+		_getch();
+		return 0;
+	}
+}
+
+bool CompareStudents(Student& rhs1, Student& rhs2)
+{
+	return rhs1.m_dSum < rhs2.m_dSum;
+}
+
+void SortStudents(Student rhs[], int size)
+{
+
+	if (Student::studentCount != size)
+	{
+		cout << "정렬을 하기 위해서는 학생들의 정보를 모두 입력해야합니다." << endl;
+		_getch();
+		return;
+	}
+
+
+	sort(&rhs[0], &rhs[size], CompareStudents); 
+
+	ofstream fout;
+
+	rhs[0].showUI();
+
+	for (int i = 0; i < size; i++)
+	{
+		rhs[i].showData();
+	}
+
+	system("notepad.exe outputData.txt"); //메모장 열어서 보여줌
+
+
+	Student::studentCount += size;
+}
+
+
+
+void SearchStudents(Student rhs[], int size)
+{
+	int tmp = Student::studentCount;
+	TCHAR szName[32] = { 0 };
+
+	if (Student::studentCount == 0)
+	{
+		cout << "입력된 학생 정보가 없습니다." << endl;
+		_getch();
+		return;
+	}
+
+	cout << "검색하실 이름을 입력하세요: ";
+	tcin >> szName;
+
+	for (int i = 0; i < size; i++)
+	{
+		if (_tcscmp(rhs[i].name, szName) == 0)
+		{
+			Student::studentCount = 1;
+			rhs[i].showUI();
+			rhs[i].showData();
+		}
+	}
+
+	system("notepad.exe outputData.txt"); //메모장 열어서 보여줌
+
+	Student::studentCount = tmp;
+}
+
+
+void SetStudentGrades(Student rhs[], int sizeStudent, int sizeSubject) //성적 입력
+{
+	Student::studentCount++; //학생의 데이터가 생성됐다는 것을 나타내기 위해 1 증가
+	int i = 0;
+
+	if (Student::studentCount > sizeStudent)
+	{
+		cout << "성적을 이미 다 입력하셨습니다." << endl;
+		Student::studentCount--;
+		_getch();
+		return;
+	}
+
+	rhs[Student::studentCount - 1].SetName();
+	
+
+	for (i = 0; i < sizeSubject; i++)
+	{
+		tcout << rhs[Student::studentCount - 1].name << "의 " << i + 1 << "번째 과목의 점수를 입력하세요 : ";
+		cin >> rhs[Student::studentCount - 1].m_dGrades[i];
+	}
+	
+	rhs[Student::studentCount - 1].Results();
+	rhs[Student::studentCount - 1].Average();
+	
+
+
+
+	cout << endl;
+
+}
+
+int main()
+{
+	Student a[NUMBER_OF_STUDENTS];
+
+	while (PrintMenu(a))
+	{
+		system("cls"); //화면청소
+	}
+
+	return 0;
+}
