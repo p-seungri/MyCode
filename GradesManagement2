@@ -11,7 +11,7 @@
 #define NUMBER_OF_STUDENTS 5 //학생수
 using namespace std;
 
-#if defined(UNICODE) || defined(_UNICODE) //한글 입력했을 때 대비해서 유니코드 해줌
+#if defined UNICODE || defined _UNICODE //한글 입력했을 때 대비해서 유니코드 해줌
 #define tcout std::wcout 
 #define tcin std::wcin 
 #define tofstream std::wofstream
@@ -26,12 +26,12 @@ class Person
 public:
 	Person() : name(nullptr), flag(0) //학생의 이름을 매개변수로 받음
 	{
-		name = new TCHAR[32]; //메모리 동적할당
+		name = new _TCHAR[32]; //메모리 동적할당
 	}
 
-	explicit Person(const TCHAR* pszName) : name(nullptr), flag(0) //학생의 이름을 매개변수로 받음
+	explicit Person(const _TCHAR* pszName) : name(nullptr), flag(0) //학생의 이름을 매개변수로 받음
 	{
-		name = new TCHAR[32]; //메모리 동적할당
+		name = new _TCHAR[32]; //메모리 동적할당
 		_tcscpy(name, pszName); //받은 이름을 저장
 	}
 
@@ -44,10 +44,9 @@ public:
 	}
 
 protected:
-	void SetName()
+	void SetName(const _TCHAR* szName) //이름을 설정하는 메소드
 	{
-		cout << "학생의 이름을 입력하시오: ";
-		tcin >> name;
+		_tcscpy(name, szName);		
 	}
 
 	void SetFlag(int f)
@@ -56,10 +55,9 @@ protected:
 	}
 
 	virtual void showData() = 0; //학생들의 정보를 출력할 순수가상함수
-	virtual void showUI() = 0; //과목을 출력할 순수가상함수
 
 protected:
-	TCHAR* name; //학생의 이름
+	_TCHAR* name; //학생의 이름
 	int flag; //동적할당 메모리 해제 판단용
 };
 
@@ -67,7 +65,7 @@ protected:
 class Student : public Person //Person클래스를 상속
 {
 public:
-	Student() : Person() //생성자 선택
+	Student() : Person() //생성자 선택, 기본생성자
 	{
 		//각종 멤버 변수들 초기화
 		m_dAverage = 0;
@@ -75,18 +73,19 @@ public:
 		m_dGrades = new double[NUMBER_OF_SUBJECTS];
 	}
 
-	Student(const Student& rhs) : Person(rhs.name)
+	Student(const Student& rhs) : Person(rhs.name) //복사생성자, 매개변수로 받은 클래스의 이름을 Person클래스로 넘김
 	{
+		//각종 매개변수를 옮김
 		m_dSum = rhs.m_dSum;
 		m_dAverage = rhs.m_dAverage;
 		m_dGrades = new double[NUMBER_OF_SUBJECTS];
-		
+
 		for (int i = 0; i < NUMBER_OF_SUBJECTS; i++)
 		{
 			m_dGrades[i] = rhs.m_dGrades[i];
 		}
 
-	
+
 	}
 
 	~Student()
@@ -150,7 +149,7 @@ public:
 	}
 
 
-	virtual void showUI() //과목 보여줌
+	static void showUI() //과목 보여주는 메소드, 각 객체마다 달라지는 것이 아니라 정적함수로 선언 및 정의
 	{
 
 		ofstream fout;
@@ -170,11 +169,12 @@ public:
 
 	}
 
-	friend int PrintMenu(Student rhs[]);
-	friend bool CompareStudents(Student& rhs1, Student& rhs2);
-	friend void SearchStudents(Student rhs[], int size);
-	friend void SortStudents(Student rhs[], int size);
-	friend void SetStudentGrades(Student rhs[], int sizeStudent, int sizeSubject);
+	friend int PrintMenu(Student rhs[]); //메뉴를 출력할 함수
+	friend bool CompareStudents(Student& rhs1, Student& rhs2); //총합의 비교 기준이 될 함수
+	friend void SearchStudents(Student rhs[], int size); //학생의 성적을 검색할 함수
+	friend void SortStudents(Student rhs[], int size); //학생의 성적을 정렬할 함수
+	friend void SetStudentGrades(Student rhs[], int sizeStudent, int sizeSubject); //학생의 성적을 설정하는 함수
+
 
 
 
@@ -187,18 +187,18 @@ private:
 
 int Student::studentCount = 0;
 
-int PrintMenu(Student rhs[])
+int PrintMenu(Student rhs[]) //메뉴를 출력
 {
-	int nMenu = 0;
-	
+	int nMenu = 0; //메뉴를 입력 받을 지역변수
+
 	cout << "메뉴를 선택하세요!" << endl;
 	cout << "1.학생성적 등록" << endl;
 	cout << "2.정렬" << endl;
 	cout << "3.검색" << endl;
 	cout << "4.종료" << endl;
-	cin >> nMenu;
+	cin >> nMenu; //메뉴를 입력받음
 
-	switch(nMenu)
+	switch (nMenu) //선택한 메뉴에 따라 기능선택
 	{
 	case 1:
 		SetStudentGrades(rhs, NUMBER_OF_STUDENTS, NUMBER_OF_SUBJECTS);
@@ -223,11 +223,17 @@ int PrintMenu(Student rhs[])
 		cout << "잘못된 메뉴를 입력하셨습니다." << endl;
 		cout << "프로그램을 종료합니다!" << endl;
 		_getch();
+
+		for (int i = 0; i < NUMBER_OF_STUDENTS; i++)
+		{
+			rhs[i].SetFlag(1);
+		}
+
 		return 0;
 	}
 }
 
-bool CompareStudents(Student& rhs1, Student& rhs2)
+bool CompareStudents(Student& rhs1, Student& rhs2) //sort함수를 위한 비교함수
 {
 	return rhs1.m_dSum < rhs2.m_dSum;
 }
@@ -235,7 +241,7 @@ bool CompareStudents(Student& rhs1, Student& rhs2)
 void SortStudents(Student rhs[], int size)
 {
 
-	if (Student::studentCount != size)
+	if (Student::studentCount != size) //정렬을 하기 전에 학생들읠 정봐 다 입력됐는지 확인
 	{
 		cout << "정렬을 하기 위해서는 학생들의 정보를 모두 입력해야합니다." << endl;
 		_getch();
@@ -243,13 +249,13 @@ void SortStudents(Student rhs[], int size)
 	}
 
 
-	sort(&rhs[0], &rhs[size], CompareStudents); 
+	sort(&rhs[0], &rhs[size], CompareStudents); //정렬
 
 	ofstream fout;
 
-	rhs[0].showUI();
+	Student::showUI(); //UI 출력
 
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < size; i++) //각 객체의 정보 출력
 	{
 		rhs[i].showData();
 	}
@@ -257,48 +263,58 @@ void SortStudents(Student rhs[], int size)
 	system("notepad.exe outputData.txt"); //메모장 열어서 보여줌
 
 
-	Student::studentCount += size;
+	Student::studentCount += size; //showData에서 count가 0까지 줄어들기 때문에 cout를 다시 원래대로 돌려줌
 }
 
 
 
-void SearchStudents(Student rhs[], int size)
+void SearchStudents(Student rhs[], int size) //학생의 이름을 검색하는 함수
 {
-	int tmp = Student::studentCount;
-	TCHAR szName[32] = { 0 };
+	int tmp = Student::studentCount; //tmp에 count를 넣음
+	_TCHAR szName[32] = { 0 }; //검색할 이름 저장할 변수
+	int i = 0;
 
-	if (Student::studentCount == 0)
+	if (Student::studentCount == 0) //count가 0이면 오류 출력
 	{
 		cout << "입력된 학생 정보가 없습니다." << endl;
 		_getch();
 		return;
 	}
 
-	cout << "검색하실 이름을 입력하세요: ";
+	cout << "검색하실 이름을 입력하세요: "; //이름 입력
 	tcin >> szName;
 
-	for (int i = 0; i < size; i++)
+	for (i = 0; i < size; i++) 
 	{
-		if (_tcscmp(rhs[i].name, szName) == 0)
+		if (_tcscmp(rhs[i].name, szName) == 0) //찾는 이름과 저장된 이름들 비교해서 찾으면
 		{
-			Student::studentCount = 1;
-			rhs[i].showUI();
-			rhs[i].showData();
+			Student::studentCount = 1; //count를 1로 해줌, 왜냐하면 showData에서 count를 줄이고 0이 되어야 마지막 라인를 출력하기 때문
+			Student::showUI(); //UI 출력
+			rhs[i].showData(); //데이터 출력
+		}
+		else if (i == size-1 && Student::studentCount != 0) //끝까지 탐색했는데 정보가 없으면
+		{
+			cout << "찾으시는 학생 정보가 없습니다." << endl; //오류 출력
+			_getch();
+			return;
 		}
 	}
 
+
+
 	system("notepad.exe outputData.txt"); //메모장 열어서 보여줌
 
-	Student::studentCount = tmp;
+	Student::studentCount = tmp; //count를 다시 원래대로 해줌
 }
 
 
 void SetStudentGrades(Student rhs[], int sizeStudent, int sizeSubject) //성적 입력
 {
 	Student::studentCount++; //학생의 데이터가 생성됐다는 것을 나타내기 위해 1 증가
+	_TCHAR szName[32] = { 0 };
 	int i = 0;
 
-	if (Student::studentCount > sizeStudent)
+	if (Student::studentCount > sizeStudent) //학생 수보다 더 많이 입력하려고 하면 막음
 	{
 		cout << "성적을 이미 다 입력하셨습니다." << endl;
 		Student::studentCount--;
@@ -306,19 +322,30 @@ void SetStudentGrades(Student rhs[], int sizeStudent, int sizeSubject) //성적 
 		return;
 	}
 
-	rhs[Student::studentCount - 1].SetName();
-	
+	cout << "학생의 이름을 입력하시오: ";
+	tcin >> szName;
 
-	for (i = 0; i < sizeSubject; i++)
+	for (i = 0; i < sizeStudent; i++) //이미 입력된 이름인지 확인
+	{
+		if (_tcscmp(rhs[i].name, szName) == 0) //이미 입력된 이름이면 오류 문구 출력
+		{
+			cout << "이미 입력된 학생입니다." << endl;
+			Student::studentCount--;
+			_getch();
+			return;
+		}
+	}
+
+	rhs[Student::studentCount - 1].SetName(szName); //이름 설정
+
+	for (i = 0; i < sizeSubject; i++) //과목 점수 입력 받음
 	{
 		tcout << rhs[Student::studentCount - 1].name << "의 " << i + 1 << "번째 과목의 점수를 입력하세요 : ";
 		cin >> rhs[Student::studentCount - 1].m_dGrades[i];
 	}
-	
-	rhs[Student::studentCount - 1].Results();
-	rhs[Student::studentCount - 1].Average();
-	
 
+	rhs[Student::studentCount - 1].Results(); //합계 계산
+	rhs[Student::studentCount - 1].Average(); //평균 계산
 
 
 	cout << endl;
@@ -327,7 +354,7 @@ void SetStudentGrades(Student rhs[], int sizeStudent, int sizeSubject) //성적 
 
 int main()
 {
-	Student a[NUMBER_OF_STUDENTS];
+	Student a[NUMBER_OF_STUDENTS]; //배열로 5명의 학생의 객체를 만듬
 
 	while (PrintMenu(a))
 	{
