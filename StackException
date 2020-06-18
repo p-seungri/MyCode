@@ -1,0 +1,315 @@
+#include <iostream>
+#include <new>
+#include <conio.h>
+using namespace std;
+
+class Stack
+{
+public:
+	Stack() : m_dData(nullptr), m_nSize(0), m_nPtr(0) //기본생성자
+	{
+
+	}
+
+	explicit Stack(int size) //변환생성자
+	{
+		Initialize(size); //초기화 시킴
+	}
+
+
+	~Stack()
+	{
+		Terminate(); //소멸자와 같이 스택을 끝내는 함수 호출
+	}
+
+	void Initialize(int size) //멤버 변수들 초기화
+	{
+		m_dData = new double[size];
+		m_nSize = size;
+		m_nPtr = 0;
+	}
+
+	void Push(double data) //데이터 푸쉬
+	{
+		try
+		{
+			if (m_nPtr >= m_nSize)
+			{
+				throw m_nSize;
+			}
+			else
+			{
+				m_dData[m_nPtr++] = data;
+			}
+		}
+
+		catch (int size)
+		{
+			cout << "ERROR: 최대 크기 " << size << "를 초과할 수 없습니다!" << endl;
+			_getch();
+		}
+	}
+
+
+	double Pop() //데이터 팝
+	{
+		try
+		{
+			if (m_nPtr <= 0)
+			{
+				throw 0;
+			}
+			else
+			{
+				return m_dData[--m_nPtr];
+			}
+
+		}
+
+		catch (...)
+		{
+			cout << "ERROR: 스택이 비어있습니다." << endl;
+			_getch();
+		}
+
+		return -1;
+	}
+
+	double Peek() const // 데이터 피크
+	{
+		try
+		{
+			if (m_nPtr <= 0)
+			{
+				throw 0;
+			}
+			else
+			{
+				return m_dData[m_nPtr - 1];
+			}
+
+		}
+
+		catch (...)
+		{
+			cout << "ERROR: 스택이 비어있습니다." << endl;
+			_getch();
+		}
+
+		return -1;
+	}
+
+	void Clear() //데이터 클리어
+	{
+		m_nPtr = 0;
+	}
+
+	int Capacitiy() const //최대 용량 반환
+	{
+		return m_nSize;
+	}
+
+	int Size() const //현재까지 쌓인 개수 반환
+	{
+		return m_nPtr;
+	}
+
+	bool IsEmpty() const //스택이 비었는지 판단
+	{
+		return m_nPtr <= 0;
+	}
+
+	bool IsFull() const //스택이 꽉 찼는지 판단
+	{
+		return m_nPtr >= m_nSize;
+	}
+
+	int Search(double data) const //데이터 탐색
+	{
+		int i = 0;
+
+		try
+		{
+			for (i = m_nPtr-1; i >= 0; i--)
+			{
+				if (m_dData[i] == data)
+				{
+					return i;
+				}
+			}
+			
+			throw data;
+			
+		}
+
+		catch(...)
+		{
+			cout << "ERROR: 찾으시는 데이터 " << data << "가 없습니다." << endl;
+			_getch();
+		}
+
+		return -1;
+	}
+
+	void PrintData() const //데이터 출력
+	{
+
+		try
+		{
+			cout << "스택의 데이터들을 출력합니다." << endl;
+
+
+			if (m_nPtr <= 0)
+			{
+				throw 0;
+			}
+			else
+			{
+
+				for (int i = 0; i < m_nPtr; i++)
+				{
+					cout << m_dData[i] << " ";
+				}
+
+				cout << endl;
+			}
+
+		}
+
+		catch (...)
+		{
+			cout << "ERROR: 스택이 비어있습니다." << endl;
+		}
+	}
+
+	void Terminate() //스택 내 동적할당 해제
+	{
+		try
+		{
+			if (m_dData != nullptr)
+			{
+				delete[] m_dData;
+				m_nSize = 0;
+				m_nPtr = 0;
+			}
+			else
+			{
+				throw 0;
+			}
+		}
+
+		catch (...)
+		{
+			cout << "ERROR: 메모리가 할당된 상태가 아닙니다!" << endl;
+			_getch();
+		}
+	}
+
+	friend bool PrintMenu(Stack& s);
+
+private:
+	double* m_dData; //데이터를 저장할 포인터 변수
+	int m_nSize; //스택의 사이즈
+	int m_nPtr; //스택에 데이터가 현재 쌓인 개수
+};
+
+bool PrintMenu(Stack& s) //메뉴 출력
+{
+	int nMenu = 0;
+	double x;
+	int result;
+	
+	cout << "현재 스택 용량: " << s.Size() << " / " << s.Capacitiy() << endl; 
+	cout << "메뉴를 선택하시오." << endl;
+	cout << "1.푸시" << endl;
+	cout << "2.팝" << endl;
+	cout << "3.피크" << endl;
+	cout << "4.탐색" << endl;
+	cout << "5.출력" << endl;
+	cout << "6.종료" << endl;
+	cin >> nMenu;
+
+	switch (nMenu)
+	{
+	case 1:
+		cout << "푸시할 데이터를 입력하시오: ";
+		cin >> x;
+
+		s.Push(x);
+		return true;
+
+	case 2:
+		x = s.Pop();
+
+		if (x != -1)
+		{
+			cout << "데이터 " << x << "가 팝되었습니다." << endl;
+			_getch();
+		}		
+		return true;
+
+	case 3:
+		x = s.Peek();
+				
+		if (x != -1)
+		{
+			cout << "피크된 데이터는 " << x << "입니다." << endl;
+			_getch();
+		}
+		return true;
+
+	case 4:
+		cout << "탐색할 데이터를 입력하시오: ";
+		cin >> x;
+
+		result = s.Search(x);
+		
+		if (result != -1)
+		{
+			cout << "데이터 " << x << "는 " << result << "번째에 있습니다." << endl;
+			_getch();
+		}
+
+		return true;
+
+	case 5:
+		s.PrintData();
+		_getch();
+		return true;
+
+	case 6:
+		cout << "프로그램을 종료합니다." << endl;
+		return false;
+
+	default:
+		cout << " 잘못된 메뉴가 입력되었습니다." << endl;
+		_getch();
+		return true;
+	}
+
+}
+
+
+
+int main()
+{
+	try
+	{
+		Stack s(8); //크기가 8인 스택 생성
+
+		while (PrintMenu(s)) //작업
+		{
+			system("cls"); //화면 청소
+		}		
+
+	}
+
+	catch (bad_alloc& exp) //메모리 할당 오류 발생시 알아서 찾아짐.
+	{
+		cout << exp.what() << endl;
+		cout << "메모리 할당오류 발생" << endl;
+		
+	}
+
+	return 0;
+}
