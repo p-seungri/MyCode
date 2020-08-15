@@ -1,0 +1,87 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main()
+{
+	int testCase = 0;
+	int n = 0;
+	int i = 0, j = 0, k = 0;
+	vector<vector<int>> v;
+
+	ios::sync_with_stdio(0);
+
+	cin >> testCase;
+
+	for (i = 0; i < testCase; i++)
+	{
+		cin >> n;
+
+		vector<int> a;
+
+		for (j = 0; j < n; j++)
+		{
+			int tmp;
+			cin >> tmp;
+
+			a.push_back(tmp);
+		}
+
+		v.push_back(a);
+	}
+
+	vector<int> sum(testCase, 0);	
+
+	for (i = 0; i < testCase; i++)
+	{
+		sum.at(i) = 0;
+
+		sort(v[i].begin(), v[i].end());
+
+		for (j = 1; j <= v[i].size(); j++)
+		{
+			if(j % 2 == 0)
+			{
+				sum[i] -= v.at(i).at(j - 1);
+			}
+			else
+			{
+				sum[i] += v.at(i).at(j - 1);
+			}
+		}
+	}
+
+	for (i = 0; i < testCase; i++)
+	{
+		cout << "Case #" << i + 1 << endl;
+		cout << sum.at(i) << endl;
+
+	}
+
+	return 0;
+}
+
+/* 문제 
+N개의 정수가 주어졌을 때 오름차순으로 정렬한 후 아래와 같은 작업을 하는 프로그램을 작성하시오.
+
+1. N개의 정수를 오름차순으로 정렬한다.
+    (오름차순 :  값이 작은 쪽에서부터 큰 쪽으로의 순서를 말함.)
+
+2. 정렬한 숫자로 아래와 같은 작업을 한다. Ai
+
+3. A1 - A2 + A3 - A4 ... + A2i-1 - A2i
+
+4. 위 식의 결과값을 출력한다.
+
+
+예를 들자면 입력값이
+
+N = 5
+
+Ai = 3,5,1,8,4 일때
+
+정렬을 하게 되면 1, 3, 4, 5, 8 이 된다.
+
+이를 계산하면 1-3+4-5+8 = 5 가 된다.
+*/
